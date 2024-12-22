@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>陶板屋套餐推薦測驗</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f7f0ff; /* 淺紫色背景 */
+            color: #4a215f; /* 深紫色文字 */
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #fff; /* 白色內容區塊 */
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: 2px solid #93329e; /* 深紫色邊框 */
+        }
+
+        h1 {
+            text-align: center;
+            color: #93329e; /* 深紫色標題 */
+        }
+
+        button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #f36f21; /* 橙色按鈕 */
+            color: #fff;
+            border: none;
+            border-radius: 25px; /* 圓角設計 */
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #d55e1c; /* 深橙色 hover 效果 */
+        }
+
+        .result-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 600px;
+            padding: 20px;
+            text-align: center;
+            z-index: 1000;
+            display: none;
+        }
+
+        .result-modal img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            display: none;
+        }
+
+        .buttons {
+            margin-top: 20px;
+        }
+
+        .buttons button {
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="images/logo.png" alt="陶板屋 Logo" style="display: block; margin: 0 auto; width: 200px;">
+        <h1>陶板屋套餐推薦測驗</h1>
+        <div id="quiz"></div>
+        <button id="submit">提交測驗</button>
+    </div>
+
+    <div class="overlay" id="overlay"></div>
+
+    <div class="result-modal" id="result-modal">
+        <div id="result-content"></div>
+        <div class="buttons">
+            <button id="download-result">下載測驗結果</button>
+            <button id="share-result">分享測驗</button>
+            <button id="close-modal">關閉</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            { question: "用一個詞形容你的用餐風格，你會選擇？", options: ["簡單", "豐盛", "創意", "懷舊"] },
+            { question: "如果只能選一種飲品搭配餐點，你會選擇？", options: ["茶類", "咖啡", "果汁", "氣泡飲"] },
+            { question: "吃飯時，你更注重？", options: ["營養均衡", "美味", "分量", "擺盤"] },
+            { question: "與家人一起聚餐時，什麼對你來說最重要？", options: ["氣氛融洽", "菜色多元", "服務親切", "價格合理"] },
+            { question: "以下哪種場景最能勾起你的家庭歸屬感？", options: ["一家人圍坐在餐桌前", "三代同堂其樂融融", "孩子與長輩一起歡笑", "全家出遊後的聚餐"] },
+            { question: "你心目中的理想家庭聚餐是？", options: ["溫馨且不失精緻", "豪華且豐盛", "輕鬆又便利", "創新又有趣"] },
+            { question: "如果可以選擇家庭聚餐的用餐環境，你更偏好？", options: ["安靜舒適", "現代時尚", "傳統溫馨", "熱鬧有趣"] },
+            { question: "與家人共度用餐時間時，你最喜歡哪種互動方式？", options: ["分享近況", "討論趣事", "一起品嘗美食", "舉杯慶祝"] },
+            { question: "孩子們的喜好對你的餐廳選擇影響大嗎？", options: ["很大", "有些", "不太", "沒有"] },
+            { question: "你是否希望餐廳提供適合長輩的健康選項？", options: ["非常希望", "有就更好", "無所謂", "不需要"] },
+            { question: "如果選一道主菜，你會選？", options: ["魚類料理", "牛排", "雞肉", "素菜"] },
+            { question: "甜點對你來說是？", options: ["必不可少", "偶爾享受", "無所謂", "健康優先"] },
+            { question: "家庭聚餐時，你偏好什麼形式的套餐？", options: ["共享拼盤", "個人套餐", "自由選擇", "全家套餐"] },
+            { question: "用餐時你會特別關注餐廳的什麼？", options: ["衛生", "氣氛", "服務", "價格"] },
+            { question: "你認為什麼樣的餐廳最適合家庭聚餐？", options: ["氣氛溫馨", "菜色多元", "價格實惠", "地點便利"] }
+        ];
+
+        const recommendations = [
+            {
+                text: "推薦您陶板屋的清爽健康套餐，期待您與您珍貴的家人的蒞臨！\n陶板屋這次也提供了家庭聚餐優惠，兩代同堂享有８折，三代同堂享有65折優惠。\n陶板屋，家庭聚餐的好朋友。",
+                img: "healthy.jpg"
+            },
+            {
+                text: "推薦您陶板屋的創意異國套餐，期待您與您珍貴的家人的蒞臨！\n陶板屋這次也提供了家庭聚餐優惠，兩代同堂享有８折，三代同堂享有65折優惠。\n陶板屋，家庭聚餐的好朋友。",
+                img: "creative.jpg"
+            },
+            {
+                text: "推薦您陶板屋的經典家庭套餐，期待您與您珍貴的家人的蒞臨！\n陶板屋這次也提供了家庭聚餐優惠，兩代同堂享有８折，三代同堂享有65折優惠。\n陶板屋，家庭聚餐的好朋友。",
+                img: "family.jpg"
+            },
+            {
+                text: "推薦您陶板屋的季節限定特色套餐，期待您與您珍貴的家人的蒞臨！\n陶板屋這次也提供了家庭聚餐優惠，兩代同堂享有８折，三代同堂享有65折優惠。\n陶板屋，家庭聚餐的好朋友。",
+                img: "seasonal.jpg"
+            }
+        ];
+
+        const quizContainer = document.getElementById('quiz');
+        const submitButton = document.getElementById('submit');
+        const resultModal = document.getElementById('result-modal');
+        const overlay = document.getElementById('overlay');
+        const resultContent = document.getElementById('result-content');
+        const closeModal = document.getElementById('close-modal');
+        const downloadButton = document.getElementById('download-result');
+        const shareButton = document.getElementById('share-result');
+
+        function buildQuiz() {
+            questions.forEach((q, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.classList.add('question');
+
+                const questionTitle = document.createElement('h3');
+                questionTitle.textContent = `${index + 1}. ${q.question}`;
+                questionDiv.appendChild(questionTitle);
+
+                const optionsList = document.createElement('ul');
+                optionsList.classList.add('options');
+
+                q.options.forEach((option, i) => {
+                    const optionItem = document.createElement('li');
+                    const optionInput = document.createElement('input');
+                    optionInput.type = 'radio';
+                    optionInput.name = `question${index}`;
+                    optionInput.value = i;
+                    optionInput.id = `q${index}_o${i}`;
+
+                    const optionLabel = document.createElement('label');
+                    optionLabel.htmlFor = `q${index}_o${i}`;
+                    optionLabel.textContent = option;
+
+                    optionItem.appendChild(optionInput);
+                    optionItem.appendChild(optionLabel);
+                    optionsList.appendChild(optionItem);
+                });
+
+                questionDiv.appendChild(optionsList);
+                quizContainer.appendChild(questionDiv);
+            });
+        }
+
+        function calculateResults() {
+            const answers = Array.from(document.querySelectorAll('input[type=radio]:checked'));
+
+            if (answers.length !== questions.length) {
+                alert('請完成所有問題再提交！');
+                return;
+            }
+
+            const score = answers.reduce((total, answer) => total + parseInt(answer.value), 0);
+
+            const recommendation = score <= 10 ? recommendations[0] :
+                                   score <= 20 ? recommendations[1] :
+                                   score <= 30 ? recommendations[2] : recommendations[3];
+
+            resultContent.innerHTML = `<p>${recommendation.text.replace(/\n/g, '<br>')}</p>
+                                       <img src="${recommendation.img}" alt="套餐圖片">`;
+
+            resultModal.style.display = 'block';
+            overlay.style.display = 'block';
+        }
+
+        function downloadResults() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const width = 600;
+            const height = 800;
+            canvas.width = width;
+            canvas.height = height;
+
+            ctx.fillStyle = "#f7f0ff";
+            ctx.fillRect(0, 0, width, height);
+
+            ctx.fillStyle = "#93329e";
+            ctx.font = "24px Arial";
+            ctx.fillText("您的測驗結果", 20, 50);
+
+            const img = new Image();
+            img.src = resultContent.querySelector('img').src;
+            img.onload = () => {
+                ctx.drawImage(img, 20, 70, 560, 300);
+                ctx.fillStyle = "#4a215f";
+                ctx.font = "18px Arial";
+                ctx.fillText(resultContent.querySelector('p').textContent.replace(/\n/g, ' '), 20, 400);
+
+                const link = document.createElement('a');
+                link.download = '測驗結果.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            };
+        }
+
+        function shareResults() {
+            const shareData = {
+                title: '我的陶板屋測驗結果',
+                text: resultContent.innerText,
+                url: window.location.href
+            };
+            navigator.share(shareData).catch(err => console.log('分享失敗:', err));
+        }
+
+        buildQuiz();
+        submitButton.addEventListener('click', calculateResults);
+        closeModal.addEventListener('click', () => {
+            resultModal.style.display = 'none';
+            overlay.style.display = 'none';
+        });
+        downloadButton.addEventListener('click', downloadResults);
+        shareButton.addEventListener('click', shareResults);
+    </script>
+</body>
+</html>
+
+
+
+
+
